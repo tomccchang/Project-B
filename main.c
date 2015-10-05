@@ -4,7 +4,8 @@
  * Recognize states of joints(sensor) 
  * Gesture Reognition in Cascade Classifyer
  */
-#include "MUXControl.h"
+#include "MUXControl.h"// MUX V1
+#include "MuxShield.h"// MUX V2
 #include "MovingAverage.h" 
 #include "PrincipalStrain.h"
 #include "BendingState.h"
@@ -22,7 +23,7 @@ unsigned int DelayTime_us=0; //us
 double DelayTime_ms=0; //ms
 
 const int AReadDelay_us = 10000000;
-const int AReadDelay = 10;
+const int AReadDelay = 12;
 
 //Sensor Value Init
 const int SensorNum=4;
@@ -34,7 +35,8 @@ StrainSensors strain(SensorNum);
 //MovingAverage MA( SampleNum, CH0, CH1, CH2);
 MovingAverage MA( SampleNum, CH0);
 //MUX shiled control
-MUXShield mux(5,4,3,2);
+MUXShield mux(5,4,3,2); // MUX V1
+MuxShield muxShield; // MUX V2
 //Bending state 
 BendingState BS(&strain);
 //keyboard simulation
@@ -80,35 +82,33 @@ void setup() {
 /*/
  
   Serial.begin(9600);
-  //Serial.begin(57600);
   //set delay time
   DelayTime_ms=1000/(Noise_Freq*SampleNum);
   DelayTime_us=(unsigned long)(DelayTime_ms*1000);
   MA.DelaySet(DelayTime_us);
  
   //PRESET MUX
-  mux.select(0);
-  //for stablization
-  delay(1000);
+  ///V2
+  muxShield.setMode(1,ANALOG_IN);
+  muxShield.setMode(2,ANALOG_IN);
+  //muxShield.setMode(3,ANALOG_IN);  
+  delay(50);//for stablization
 
   for(int i=0; i<SensorNum;i++){
     // 0 degree (MUX M1/M2 CH0)
     mux.select(3*i+0+1);
-    //delayMicroseconds(AReadDelay_us);
     delay(AReadDelay);
     MA.UpdateAllOne();
     MA.AverageOne();
     NeturalLev[0][i]=MA.AvgValue0;
     // 45 degree (MUX M1/M2 CH0)
     mux.select(3*i+1+1);
-    //delayMicroseconds(AReadDelay_us);
     delay(AReadDelay);
     MA.UpdateAllOne();
     MA.AverageOne();
     NeturalLev[1][i]=MA.AvgValue0;
     // 90 degree (MUX M1/M2 CH0)
     mux.select(3*i+2+1);
-    //delayMicroseconds(AReadDelay_us);
     delay(AReadDelay);
     MA.UpdateAllOne();
     MA.AverageOne();
